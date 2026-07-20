@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: API Bibliothèque HEI
+  version: 1.0.0
+  description: Gestion des livres et des emprunts
+servers:
+  - url: 'https://api.hei.school/v1'
+  - url: 'https://staging.hei.school/v1'
+    description: Environnement de test
+paths:
+  /livres:
+    get:
+      summary: Lister les livres
+      parameters:
+        - in: query
+          name: page
+          description: Paramètre pour sélectionner la page. Par défaut, 1.
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          description: Paramètre pour sélectionner la taille de la page. Par défaut, 20.
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des livres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Livre'
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Livre'
+      responses:
+        '201':
+          description: Livre créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /livres/{id}:
+    get:
+      summary: Lire un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      responses:
+        '200':
+          description: Livre trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Livre'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      summary: Modifier un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Livre'
+      responses:
+        '200':
+          description: Livre modifié
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    patch:
+      summary: Modifier partiellement un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Livre'
+      responses:
+        '200':
+          description: Livre modifié
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    delete:
+      summary: Supprimer un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      responses:
+        '204':
+          description: Livre supprimé
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  schemas:
+    Livre:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        titre:
+          type: string
+          example: 'Dadabe'
+        auteur:
+          type: string
+          example: 'JJR'
+    Erreur:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        type:
+          type: string
+          example: "https://example.com/not-found"
+        title:
+          type: string
+          example: "Livre introuvable."
+        detail:
+          type: string
+          example: "Livre introuvable dans le chemin spéciié"
