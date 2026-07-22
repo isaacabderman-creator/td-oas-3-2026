@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: API Cours HEI
+  version: 1.0.0
+servers:
+  - url: https://api.hei.school/v1
+paths:
+  /cours:
+    get:
+      responses:
+        '200':
+          description: Liste des cours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cours'
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CoursSansID'
+      responses:
+        '201':
+          description: Cours créés
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cours'
+        '422':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /cours/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Cours trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cours'
+        '404':
+          description: Cours introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CoursSansID'
+      responses:
+        '200':
+          description: Cours mis à jour
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cours'
+        '422':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Cours introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    delete:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '204':
+          description: Cours supprimé
+        '404':
+          description: Cours introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  schemas:
+    CoursSansID:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 'API'
+        intitule:
+          type: string
+          example: 'Introduction aux API'
+        credits:
+          type: integer
+          example: 4
+    Cours:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CoursSansID'
+      required:
+        - code
+        - intitule
+      properties:
+        id:
+          type: integer
+          example: 1
+    Erreur:
+      type: object
+      properties:
+        type:
+          type: string
+          example: https://example.com/error
+        title:
+          type: string
+          example: Ressource non trouvée
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: La ressource demandée n'existe pas

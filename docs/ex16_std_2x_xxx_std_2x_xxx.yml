@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: API Cours HEI
+  version: 1.0.0
+servers:
+  - url: https://api.hei.school/v1
+paths:
+  /cours:
+    get:
+      responses:
+        '200':
+          description: Liste des cours
+    post:
+      responses:
+        '201':
+          description: Cours créés
+        '422':
+          description: Données invalides
+  /cours/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Cours trouvé
+        '404':
+          description: Cours introuvable
+    put:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Cours mis à jour
+        '422':
+          description: Données invalides
+        '404':
+          description: Cours introuvable
+    delete:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '204':
+          description: Cours supprimé
+        '404':
+          description: Cours introuvable
