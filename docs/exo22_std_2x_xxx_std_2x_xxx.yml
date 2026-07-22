@@ -1,0 +1,169 @@
+openapi: 3.0.3
+info:
+  title: API de billetterie
+  version: 0.0.1
+tags:
+  - name: Evenement
+  - name: Billet
+paths:
+  /evenements:
+    get:
+      tags:
+        - Evenement
+      responses:
+        '200':
+          description: Liste des évènements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evenement'
+    post:
+      tags:
+        - Evenement
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EvenementSansID'
+      responses:
+        '201':
+          description: Liste d'évènements créés
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evenement'
+  /evenements/{id}:
+    get:
+      tags:
+        - Evenement
+      responses:
+        '200':
+          description: Évènement trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+        '404':
+          description: Évènement introuvable
+    put:
+      tags:
+        - Evenement
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvenementSansID'
+      responses:
+        '200':
+          description: Évènement modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+        '404':
+          description: Évènement introuvable
+        '422':
+          description: Données fournies invalides
+    delete:
+      tags:
+        - Evenement
+      responses:
+        '204':
+          description: Évènement supprimé
+        '404':
+          description: Évènement introuvable
+  /evenements/{id}/billets:
+    get:
+      tags:
+        - Billet
+      responses:
+        '204':
+          description: Liste des billets d'un évènement spécifique
+        '404':
+          description: Évènement introuvable
+    post:
+      tags:
+        - Billet
+      responses:
+        '201':
+          description: Liste de billets émis pour l'évènement
+        '404':
+          description: Évènement introuvable
+        '422':
+          description: Données fournies invalides
+  /evenements/{id}/billets/{billetId}/statut:
+    put:
+      tags:
+        - Billet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationBilletStatut'
+      responses:
+        '200':
+          description: Billet avec son statut modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Billet'
+        '404':
+          description: Évènement ou billet introuvable
+        '422':
+          description: Données fournies invalides
+components:
+  schemas:
+    Evenement:
+      allOf:
+        - $ref: '#/components/schemas/EvenementSansID'
+      properties:
+        id:
+          type: integer
+    EvenementSansID:
+      type: object
+      properties:
+        titre:
+          type: string
+          example: Fête de fin d'année
+        date:
+          type: string
+          format: date
+          example: 2026-12-01
+        lieu:
+          type: string
+          example: Stade Barea
+        capacite:
+          type: integer
+          example: 100
+    Billet:
+      type: object
+      properties:
+        id:
+          type: integer
+        statut:
+          $ref: '#/components/schemas/BilletStatut'
+        nom:
+          type: string
+        categorie:
+          $ref: '#/components/schemas/BilletCategorie'
+    ModificationBilletStatut:
+      type: object
+      properties:
+        statut:
+          $ref: '#/components/schemas/BilletStatut'
+    BilletStatut:
+      type: string
+      enum:
+        - VALIDE
+        - ANNULE
+    BilletCategorie:
+      type: string
+      enum:
+        - STANDARD
+        - VIP
