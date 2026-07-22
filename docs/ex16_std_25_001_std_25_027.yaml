@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+      title: API Cours HEI
+      version: 1.0.0
+servers:
+      - url: "https://api.hei.school/v1"
+paths:
+      /cours:
+            get:
+                  summary: Lister des cours
+                  responses:
+                        "200":
+                              description: Liste des cours
+            post:
+                  summary: Creer un cours
+                  requestBody:
+                        required: true
+                        content:
+                              application/json:
+                                    schema:
+                                          type: object
+                                          required:
+                                                - code
+                                                - intitule
+                                          properties:
+                                                code:
+                                                      type: string
+                                                intitule:
+                                                      type: string
+                                                credits:
+                                                      type: integer
+                  responses:
+                        "201":
+                              description: Cours cree
+                        "422":
+                              description: Donnee invalide
+      /cours/{id}:
+            get:
+                  summary: Lire un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  responses:
+                        "200":
+                              description: Cours trouve
+                        "404":
+                              description: Cours introuvable
+            put:
+                  summary: Remplacer un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  requestBody:
+                        required: true
+                        content:
+                              application/json:
+                                    schema:
+                                          type: object
+                                          required:
+                                                - code
+                                                - intitule
+                                          properties:
+                                                code:
+                                                      type: string
+                                                intitule:
+                                                      type: string
+                                                credits:
+                                                      type: integer
+                  responses:
+                        "202":
+                              description: Cours remplace
+                        "404":
+                              description: Cours introuvable
+                        "422":
+                              description: Donnee invalide
+            delete:
+                  summary: Supprimer un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  responses:
+                        "204":
+                              description: Cours supprime
+                        "404":
+                              description: Cours introuvable

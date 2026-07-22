@@ -1,0 +1,140 @@
+openapi: 3.0.3
+info:
+      title: API Cours HEI
+      version: 1.0.0
+servers:
+      - url: "https://api.hei.school/v1"
+components:
+      schemas:
+            Cours:
+                  type: object
+                  required:
+                        - code
+                        - intitule
+                  properties:
+                        id:
+                              type: integer
+                              example: 12
+                        code:
+                              type: string
+                              example: PROG3
+                        intitule:
+                              type: string
+                              example: Implementation d'API Backend
+                        credits:
+                              type: integer
+                              example: 8
+            Erreur:
+                  type: object
+                  properties:
+                        type:
+                              type: string
+                              example: "https://api.hei.school/errors/not-found"
+                        title:
+                              type: string
+                              example: Ressource introuvable
+                        status:
+                              type: integer
+                              example: 404
+                        detail:
+                              type: string
+                              example: Le cours demande n'existe pas
+
+paths:
+      /cours:
+            get:
+                  summary: Lister des cours
+                  responses:
+                        "200":
+                              description: Liste des cours
+                              content:
+                                    application/json:
+                                          schema:
+                                                type: array
+                                                items:
+                                                      $ref: "#/components/schemas/Cours"
+            post:
+                  summary: Creer un cours
+                  requestBody:
+                        required: true
+                        content:
+                              application/json:
+                                    schema:
+                                          $ref: "#/components/schemas/Cours"
+                  responses:
+                        "201":
+                              description: Cours cree
+                        "422":
+                              description: Donnee invalide
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Erreur"
+      /cours/{id}:
+            get:
+                  summary: Lire un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  responses:
+                        "200":
+                              description: Cours trouve
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Cours"
+                        "404":
+                              description: Cours introuvable
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Erreur"
+            put:
+                  summary: Remplacer un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  requestBody:
+                        required: true
+                        content:
+                              application/json:
+                                    schema:
+                                          $ref: "#/components/schemas/Cours"
+                  responses:
+                        "202":
+                              description: Cours remplace
+                        "404":
+                              description: Cours introuvable
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Erreur"
+                        "422":
+                              description: Donnee invalide
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Erreur"
+            delete:
+                  summary: Supprimer un cours
+                  parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema:
+                                type: integer
+                  responses:
+                        "204":
+                              description: Cours supprime
+                        "404":
+                              description: Cours introuvable
+                              content:
+                                    application/json:
+                                          schema:
+                                                $ref: "#/components/schemas/Erreur"

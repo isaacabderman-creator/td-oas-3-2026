@@ -1,0 +1,314 @@
+openapi: 3.0.3
+info:
+  title: API Billetterie HEI
+  version: 1.0.0
+  description: Gestion des événements et de leurs billets
+servers:
+  - url: 'https://api.hei.school/v1'
+security:
+  - bearerAuth: []
+tags:
+  - name: Evenement
+    description: Organisation d'un événement
+  - name: Billet
+    description: Organisation d'un billet
+paths:
+  /evenements:
+    get:
+      tags: [Evenement]
+      summary: Lister les événements
+      parameters:
+        - in: query
+          name: page
+          description: Numéro de la page à récupérer. Par défaut, 1.
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          description: Nombre maximum d'événements retournés par page. Par défaut, 20.
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des événements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evenement'
+    post:
+      tags: [Evenement]
+      summary: Créer un événement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evenement'
+      responses:
+        '201':
+          description: Événement créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /evenements/{id}:
+    get:
+      tags: [Evenement]
+      summary: Lire un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Événement trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+        '404':
+          description: Événement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags: [Evenement]
+      summary: Remplacer un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evenement'
+      responses:
+        '200':
+          description: Événement remplacé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+        '404':
+          description: Événement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    delete:
+      tags: [Evenement]
+      summary: Supprimer un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Événement supprimé
+        '404':
+          description: Événement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /evenements/{id}/billets:
+    get:
+      tags: [Billet, Evenement]
+      summary: Lister les billets d'un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des billets de l'événement
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Billet'
+        '404':
+          description: Événement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    post:
+      tags: [Billet, Evenement]
+      summary: Émettre un billet pour un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Billet'
+      responses:
+        '201':
+          description: Billet émis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Billet'
+        '404':
+          description: Événement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /billets/{id}/annulation:
+    put:
+      tags: [Billet]
+      summary: Annuler un billet
+      description: >-
+        Remplacement complet et idempotent de l'état d'annulation : rejouer la même
+        requête laisse le billet dans le même état annulé, sans effet de bord supplémentaire.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Annulation'
+      responses:
+        '200':
+          description: Billet annulé
+        '404':
+          description: Billet introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Evenement:
+      type: object
+      required: [titre, date, lieu, capacite]
+      properties:
+        id:
+          type: integer
+          example: 5
+        titre:
+          type: string
+          example: "Journées Portes Ouvertes HEI"
+        date:
+          type: string
+          format: date
+          example: "2026-09-12"
+        lieu:
+          type: string
+          example: "Campus HEI, Antananarivo"
+        capacite:
+          type: integer
+          example: 300
+    Billet:
+      type: object
+      required: [titulaire, categorie]
+      properties:
+        id:
+          type: integer
+          example: 101
+        evenementId:
+          type: integer
+          example: 5
+        titulaire:
+          type: string
+          example: "Rakoto Jean"
+        categorie:
+          type: string
+          enum: [standard, VIP]
+          example: standard
+    Annulation:
+      type: object
+      required: [annule]
+      properties:
+        annule:
+          type: boolean
+          example: true
+        motif:
+          type: string
+          example: "Empêchement du titulaire"
+    Erreur:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "https://api.hei.school/errors/not-found"
+        title:
+          type: string
+          example: "Ressource introuvable"
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: "Le billet demandé n'existe pas"

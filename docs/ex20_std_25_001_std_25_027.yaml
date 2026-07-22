@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: API Bibliothèque HEI
+  version: 1.0.0
+  description: Gestion des livres et des emprunts
+servers:
+  - url: 'https://api.hei.school/v1'
+  - url: 'https://staging.hei.school/v1'
+    description: Environnement de test
+tags:
+  - name: Livre
+    description: Organisation d'un livre
+  - name: Emprunt
+    description: Organisation d'un emprunt
+  - name: Reservation
+    description: Organisation d'une reservation
+paths:
+  /emprunts:
+    post:
+      tags:
+        - Emprunt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Emprunt'
+      responses:
+        '201':
+          description: List d'emprunts effectué
+        '422':
+          description: Données invalides
+  /reservations/{reservationId}:
+    put:
+      description: Remplacement integral du contenu de l'URI sans creer directement une ressource
+      tags:
+        - Reservation
+      parameters:
+        - name: reservationId
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+      responses:
+        '200':
+          description: Reservation posee
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+
+  /livres:
+    get:
+      tags:
+        - Livre
+      summary: Lister les livres
+      parameters:
+        - in: query
+          name: page
+          description: Paramètre pour sélectionner la page. Par défaut, 1.
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          description: Paramètre pour sélectionner la taille de la page. Par défaut, 20.
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des livres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Livre'
+    post:
+      tags:
+        - Livre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Livre'
+      responses:
+        '201':
+          description: Livre créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /livres/{id}/emprunts:
+    get:
+      tags:
+        - Emprunt
+        - Livre
+      summary: Lire les tableaux d'emprunts d'un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      responses:
+        '200':
+          description: Liste d'emprunts d'un livre
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Emprunt'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /livres/{id}/disponibilite:
+    put:
+      tags:
+        - Livre
+      summary: Modifier disponibilite d'un livre
+      description: Remplacement integral de la disponibilite d'un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Disponibilite'
+      responses:
+        '200':
+          description: Disponibilite modifié
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /livres/{id}:
+    get:
+      tags:
+        - Livre
+      summary: Lire un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      responses:
+        '200':
+          description: Livre trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Livre'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+        - Livre
+      summary: Modifier un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Livre'
+      responses:
+        '200':
+          description: Livre modifié
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    delete:
+      tags:
+        - Livre
+      summary: Supprimer un livre
+      parameters:
+        - name: id
+          in: path
+          schema: { type: integer }
+          required: true
+      responses:
+        '204':
+          description: Livre supprimé
+        '404':
+          description: Livre introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Emprunt:
+      type: object
+      properties:
+        id:
+          type: integer
+        livreId:
+          type: integer
+        dateEmprunt:
+          type: string
+          format: date
+        dateRetour:
+          type: string
+          format: date
+    Livre:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        titre:
+          type: string
+          example: 'Dadabe'
+        auteur:
+          type: string
+          example: 'JJR'
+    Disponibilite:
+      type: object
+      properties:
+        disponible:
+          type: boolean
+          example: true
+        motif:
+          type: string
+          example: "Retour emprunt"
+    Reservation:
+      type: object
+      properties:
+        livreId:
+          type: integer
+          example: 67
+        usagerId:
+          type: integer
+          example: 69
+    Erreur:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        type:
+          type: string
+          example: "https://example.com/not-found"
+        title:
+          type: string
+          example: "Livre introuvable."
+        detail:
+          type: string
+          example: "Livre introuvable dans le chemin spéciié"

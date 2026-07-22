@@ -1,0 +1,347 @@
+openapi: 3.0.3
+info:
+  title: API Support HEI
+  version: 1.0.0
+  description: Gestion des tickets de support, de leurs commentaires et de leur assignation
+servers:
+  - url: 'https://api.hei.school/v1'
+security:
+  - bearerAuth: []
+tags:
+  - name: Ticket
+    description: Organisation d'un ticket de support
+  - name: Commentaire
+    description: Organisation d'un commentaire de ticket
+paths:
+  /tickets:
+    get:
+      tags: [Ticket]
+      summary: Lister les tickets
+      parameters:
+        - in: query
+          name: page
+          description: Numéro de la page à récupérer. Par défaut, 1.
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          description: Nombre maximum de tickets retournés par page. Par défaut, 20.
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+  /tickets/{ticketId}:
+    put:
+      tags: [Ticket]
+      summary: Créer ou remplacer un ticket
+      description: >-
+        L'identifiant est fourni par le client (UUID) : rejouer la même requête après
+        une coupure réseau aboutit au même état, sans créer de doublon.
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      responses:
+        '200':
+          description: Ticket remplacé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '201':
+          description: Ticket créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    get:
+      tags: [Ticket]
+      summary: Lire un ticket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ticket trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    delete:
+      tags: [Ticket]
+      summary: Supprimer un ticket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Ticket supprimé
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /tickets/{ticketId}/statut:
+    put:
+      tags: [Ticket]
+      summary: Modifier le statut d'un ticket
+      description: >-
+        Remplacement complet et idempotent du statut : rejouer la requête laisse
+        le ticket dans le même statut, sans effet de bord supplémentaire.
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Statut'
+      responses:
+        '200':
+          description: Statut modifié
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /tickets/{ticketId}/assignation:
+    put:
+      tags: [Ticket]
+      summary: Modifier l'assignation d'un ticket
+      description: >-
+        Remplacement complet et idempotent de l'agent assigné : rejouer la requête
+        laisse le ticket assigné au même agent, sans effet de bord supplémentaire.
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assignation'
+      responses:
+        '200':
+          description: Assignation modifiée
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /tickets/{ticketId}/commentaires:
+    get:
+      tags: [Commentaire, Ticket]
+      summary: Lister les commentaires d'un ticket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          required: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          required: false
+      responses:
+        '200':
+          description: Liste des commentaires
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commentaire'
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    post:
+      tags: [Commentaire, Ticket]
+      summary: Ajouter un commentaire à un ticket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Commentaire'
+      responses:
+        '201':
+          description: Commentaire ajouté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commentaire'
+        '404':
+          description: Ticket introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Donnée invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Ticket:
+      type: object
+      required: [sujet, description, priorite, statut]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        sujet:
+          type: string
+          example: "Connexion impossible au VPN"
+        description:
+          type: string
+          example: "Le client VPN affiche une erreur 403 depuis ce matin"
+        priorite:
+          type: string
+          enum: [basse, normale, haute]
+          example: haute
+        statut:
+          type: string
+          enum: [ouvert, en_cours, resolu, ferme]
+          example: ouvert
+    Statut:
+      type: object
+      required: [statut]
+      properties:
+        statut:
+          type: string
+          enum: [ouvert, en_cours, resolu, ferme]
+          example: en_cours
+    Assignation:
+      type: object
+      required: [agentId]
+      properties:
+        agentId:
+          type: integer
+          example: 7
+    Commentaire:
+      type: object
+      required: [auteur, texte]
+      properties:
+        id:
+          type: integer
+          example: 34
+        ticketId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        auteur:
+          type: string
+          example: "Rasoa Nirina"
+        texte:
+          type: string
+          example: "Le problème persiste après redémarrage"
+        date:
+          type: string
+          format: date
+          example: "2026-07-20"
+    Erreur:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "https://api.hei.school/errors/not-found"
+        title:
+          type: string
+          example: "Ressource introuvable"
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: "Le ticket demandé n'existe pas"
